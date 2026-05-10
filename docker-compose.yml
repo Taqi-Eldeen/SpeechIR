@@ -1,0 +1,42 @@
+services:
+  api:
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./data:/app/data
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_PATH=/app/data/speech_search.db
+      - DATA_DIR=/app/data
+      - MEDIA_DIR=/app/media
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    command: celery -A worker.tasks:celery_app worker --loglevel=info
+    volumes:
+      - ./media:/app/media
+      - ./data:/app/data
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_PATH=/app/data/speech_search.db
+      - DATA_DIR=/app/data
+      - WHISPER_MODEL=tiny
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api

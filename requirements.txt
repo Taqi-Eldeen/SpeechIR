@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+celery[redis]
+redis
+faster-whisper
+rank-bm25>=0.2.2
+nltk>=3.8
+scikit-learn>=1.3

@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .snippet b {
+    @apply rounded bg-amber-200/90 px-0.5 font-semibold text-speech-ink;
+  }
+
+  .wave-bar {
+    animation: wave 0.9s ease-in-out infinite;
+  }
+
+  .wave-bar:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .wave-bar:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes wave {
+    0%,
+    100% {
+      transform: scaleY(0.35);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+}
