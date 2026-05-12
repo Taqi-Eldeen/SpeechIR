@@ -2,32 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Neumorphism base ─────────────────────────────────────────────────────── */
+:root {
+  --neu-bg:    #e0e5ec;
+  --neu-dark:  #a3b1c6;
+  --neu-light: #ffffff;
+  --neu-accent: #4e6ef2;
+  --neu-muted:  #7d92b5;
+  --neu-danger: #e05c6e;
+  --neu-ok:     #3ecf8e;
+  --neu-r: 1.25rem;
+}
+
+body {
+  background: var(--neu-bg);
+  color: #31456a;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
 @layer components {
-  .snippet b {
-    @apply rounded bg-amber-200/90 px-0.5 font-semibold text-speech-ink;
+
+  /* Raised surface — card / panel */
+  .neu {
+    background: var(--neu-bg);
+    border-radius: var(--neu-r);
+    box-shadow: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
   }
 
+  /* Smaller raised surface */
+  .neu-sm {
+    background: var(--neu-bg);
+    border-radius: 0.875rem;
+    box-shadow: 5px 5px 10px var(--neu-dark), -5px -5px 10px var(--neu-light);
+  }
+
+  /* Carved-in surface — inputs, troughs */
+  .neu-inset {
+    background: var(--neu-bg);
+    border-radius: var(--neu-r);
+    box-shadow: inset 4px 4px 10px var(--neu-dark), inset -4px -4px 10px var(--neu-light);
+  }
+
+  /* Flat neutral button */
+  .neu-btn {
+    background: var(--neu-bg);
+    border-radius: 0.75rem;
+    box-shadow: 4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light);
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
+    cursor: pointer;
+  }
+  .neu-btn:hover:not(:disabled) {
+    box-shadow: 6px 6px 12px var(--neu-dark), -6px -6px 12px var(--neu-light);
+  }
+  .neu-btn:active:not(:disabled) {
+    box-shadow: inset 3px 3px 7px var(--neu-dark), inset -3px -3px 7px var(--neu-light);
+    transform: scale(0.98);
+  }
+  .neu-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Accent button (blue gradient) */
+  .neu-btn-accent {
+    background: linear-gradient(145deg, #627cf5, #4260f0);
+    border-radius: 0.75rem;
+    box-shadow: 4px 4px 10px var(--neu-dark), -3px -3px 8px var(--neu-light);
+    color: #ffffff;
+    transition: box-shadow 0.15s ease, transform 0.1s ease, filter 0.15s ease;
+    cursor: pointer;
+  }
+  .neu-btn-accent:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 6px 6px 14px var(--neu-dark), -4px -4px 10px var(--neu-light);
+  }
+  .neu-btn-accent:active:not(:disabled) {
+    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.25);
+    transform: scale(0.97);
+  }
+  .neu-btn-accent:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Logo icon */
+  .neu-logo {
+    background: linear-gradient(145deg, #627cf5, #4260f0);
+    border-radius: 0.875rem;
+    box-shadow: 4px 4px 8px var(--neu-dark), -3px -3px 6px var(--neu-light);
+  }
+
+  /* Score badge */
+  .neu-badge {
+    background: linear-gradient(145deg, #3a5adf, #3050d0);
+    border-radius: 999px;
+    box-shadow: 2px 2px 5px var(--neu-dark), -1px -1px 4px var(--neu-light);
+    color: #fff;
+  }
+
+  /* Snippet highlight */
+  .snippet b {
+    background: rgba(78, 110, 242, 0.18);
+    border-radius: 3px;
+    padding: 0 3px;
+    font-weight: 700;
+    color: #31456a;
+  }
+
+  /* Wave bar animation */
   .wave-bar {
     animation: wave 0.9s ease-in-out infinite;
   }
-
-  .wave-bar:nth-child(2) {
-    animation-delay: 0.15s;
-  }
-
-  .wave-bar:nth-child(3) {
-    animation-delay: 0.3s;
-  }
+  .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.3s;  }
 
   @keyframes wave {
-    0%,
-    100% {
-      transform: scaleY(0.35);
-      opacity: 0.5;
-    }
-    50% {
-      transform: scaleY(1);
-      opacity: 1;
-    }
+    0%, 100% { transform: scaleY(0.35); opacity: 0.55; }
+    50%       { transform: scaleY(1);   opacity: 1;    }
   }
+
+  /* Details/summary reset */
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
 }

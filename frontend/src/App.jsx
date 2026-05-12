@@ -26,6 +26,7 @@ export default function App() {
   const [activeAudio, setActiveAudio] = useState(null);
   const [playerTranscript, setPlayerTranscript] = useState("");
   const [relevantSet, setRelevantSet] = useState(() => new Set());
+  const [scorer, setScorer] = useState("bm25");
 
   const { play, stop, playingKey } = useAudioManager();
 
@@ -46,7 +47,7 @@ export default function App() {
     setLoading(true);
     setRelevantSet(new Set());
     try {
-      const data = await searchSegments(q, 20);
+      const data = await searchSegments(q, 20, scorer);
       const list = Array.isArray(data) ? data : [];
       list.sort((a, b) => Number(b.score) - Number(a.score));
       setResults(list);
@@ -57,7 +58,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, scorer]);
 
   const handlePlay = useCallback(
     async (result) => {
@@ -86,7 +87,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-speech-surface">
+    <div className="min-h-screen" style={{ background: "var(--neu-bg)" }}>
       <Header
         onLogoClick={() => {
           goHome();
@@ -102,23 +103,25 @@ export default function App() {
             setQuery={setQuery}
             onSearch={runSearch}
             loading={loading}
+            scorer={scorer}
+            setScorer={setScorer}
           />
         ) : null}
+
         {view === "home" ? <UploadPanel uploads={uploads} setUploads={setUploads} /> : null}
 
         {view === "results" && results.length > 0 ? (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={goHome}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-speech-ink shadow-sm hover:bg-slate-50"
+                className="neu-btn px-4 py-2 text-sm font-medium text-neu-ink"
               >
-                ← Back to home
+                ← Home
               </button>
-              <span className="text-sm text-speech-muted">
-                {results.length} hit{results.length === 1 ? "" : "s"} for &ldquo;
-                {query}&rdquo;
+              <span className="text-sm text-neu-muted">
+                {results.length} hit{results.length === 1 ? "" : "s"} for &ldquo;{query}&rdquo;
               </span>
             </div>
             <ResultsList
@@ -139,93 +142,93 @@ export default function App() {
 
         {view === "player" && activeAudio ? (
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => {
-                  setView("results");
-                  setActiveAudio(null);
-                }}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-slate-50"
+                onClick={goResults}
+                className="neu-btn px-4 py-2 text-sm font-medium text-neu-ink"
               >
-                ← Back to results
+                ← Results
               </button>
               <button
                 type="button"
                 onClick={goHome}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-slate-50"
+                className="neu-btn px-4 py-2 text-sm font-medium text-neu-ink"
               >
                 Home
               </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
-              <p className="text-xs font-medium uppercase tracking-wide text-speech-muted">
-                Now playing
-              </p>
-              <h2 className="mt-1 text-lg font-semibold text-speech-ink">
-                {activeAudio.filename}
-              </h2>
-              <p className="text-sm text-speech-muted">
-                From {fmtTime(activeAudio.start_s)} · BM25{" "}
-                {Number(activeAudio.score).toFixed(2)}
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-10 items-end gap-0.5" aria-hidden>
+            <div className="neu p-6 space-y-5">
+              {/* Now playing header */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-neu-muted">Now Playing</p>
+                <h2 className="mt-1 text-lg font-bold text-neu-ink">{activeAudio.filename}</h2>
+                <p className="text-sm text-neu-muted">
+                  From {fmtTime(activeAudio.start_s)} · {(activeAudio.scorer ?? "bm25").toUpperCase()}{" "}
+                  {Number(activeAudio.score).toFixed(4)}
+                </p>
+              </div>
+
+              {/* Waveform + controls */}
+              <div className="flex items-center gap-4">
+                <div className="neu-inset flex h-12 items-end gap-0.5 px-4 py-2 rounded-[0.875rem]" aria-hidden>
                   {playingKey ? (
                     <>
-                      <span className="wave-bar inline-block h-8 w-1.5 origin-bottom rounded-sm bg-speech-accent" />
-                      <span className="wave-bar inline-block h-8 w-1.5 origin-bottom rounded-sm bg-speech-accent" />
-                      <span className="wave-bar inline-block h-8 w-1.5 origin-bottom rounded-sm bg-speech-accent" />
+                      <span className="wave-bar inline-block h-6 w-1.5 origin-bottom rounded-sm" style={{ background: "var(--neu-accent)" }} />
+                      <span className="wave-bar inline-block h-6 w-1.5 origin-bottom rounded-sm" style={{ background: "var(--neu-accent)" }} />
+                      <span className="wave-bar inline-block h-6 w-1.5 origin-bottom rounded-sm" style={{ background: "var(--neu-accent)" }} />
                     </>
                   ) : (
                     <>
-                      <span className="inline-block h-3 w-1.5 rounded-sm bg-slate-300" />
-                      <span className="inline-block h-5 w-1.5 rounded-sm bg-slate-300" />
-                      <span className="inline-block h-3 w-1.5 rounded-sm bg-slate-300" />
+                      <span className="inline-block h-2 w-1.5 rounded-sm opacity-30" style={{ background: "var(--neu-muted)" }} />
+                      <span className="inline-block h-4 w-1.5 rounded-sm opacity-30" style={{ background: "var(--neu-muted)" }} />
+                      <span className="inline-block h-2 w-1.5 rounded-sm opacity-30" style={{ background: "var(--neu-muted)" }} />
                     </>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() =>
-                    play(
-                      audioSrcFromPlaybackUrl(activeAudio.playback_url),
-                      Number(activeAudio.start_s) || 0
-                    )
-                  }
-                  className="rounded-xl bg-speech-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-600"
+                  onClick={() => play(audioSrcFromPlaybackUrl(activeAudio.playback_url), Number(activeAudio.start_s) || 0)}
+                  className="neu-btn-accent px-5 py-2.5 text-sm font-semibold"
                 >
-                  Play from match
+                  ▶ Play from match
                 </button>
                 <button
                   type="button"
                   onClick={() => stop()}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
+                  className="neu-btn px-5 py-2.5 text-sm font-medium text-neu-ink"
                 >
-                  Stop
+                  ■ Stop
                 </button>
               </div>
-              <div className="mt-6 border-t border-slate-100 pt-4">
-                <p className="text-xs font-medium text-speech-muted">Match snippet</p>
-                <div className="mt-2">
+
+              {/* Snippet */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-neu-muted mb-2">Match snippet</p>
+                <div className="neu-inset px-4 py-3 rounded-[0.875rem]">
                   <Snippet html={activeAudio.excerpt} />
                 </div>
               </div>
-              <details className="mt-4 rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2">
-                <summary className="cursor-pointer text-sm font-medium text-speech-ink">
-                  Full transcript (entire file)
+
+              {/* Full transcript */}
+              <details className="neu overflow-hidden">
+                <summary className="neu-btn cursor-pointer px-5 py-3 text-sm font-semibold text-neu-ink flex items-center justify-between">
+                  <span>Full transcript</span>
+                  <span className="text-neu-muted">▾</span>
                 </summary>
-                <pre className="mt-2 max-h-[40vh] overflow-auto whitespace-pre-wrap break-words text-xs text-slate-800">
-                  {playerTranscript || "Loading…"}
-                </pre>
+                <div className="neu-inset mx-4 mb-4 mt-1 px-4 py-3 rounded-[0.875rem]">
+                  <pre className="max-h-[40vh] overflow-auto whitespace-pre-wrap break-words text-xs text-neu-ink leading-relaxed">
+                    {playerTranscript || "Loading…"}
+                  </pre>
+                </div>
               </details>
             </div>
           </div>
         ) : null}
 
         {view === "home" && !loading && results.length === 0 ? (
-          <p className="text-center text-sm text-speech-muted">
+          <p className="text-center text-sm text-neu-muted px-4">
             Search transcribed lectures or upload a new audio file. Results open in a dedicated
             view; use Play to open the focused player.
           </p>

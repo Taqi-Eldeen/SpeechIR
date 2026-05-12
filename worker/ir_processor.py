@@ -75,7 +75,7 @@ def query_highlight_words(query: str) -> list[str]:
     return [t for t in tokens if t not in stop and len(t) > 1]
 
 
-def make_snippet(text: str, query: str, window: int = 40) -> str:
+def make_snippet(text: str, query: str, window: int = 80) -> str:
     """Context window around first match of any query word; bold that span in original casing."""
     if not text:
         return ""

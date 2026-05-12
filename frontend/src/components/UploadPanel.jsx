@@ -8,11 +8,8 @@ export default function UploadPanel({ uploads, setUploads }) {
   const [drag, setDrag] = useState(false);
 
   const onUpdate = useCallback(
-    (fileId, patch) => {
-      setUploads((prev) =>
-        prev.map((u) => (u.file_id === fileId ? { ...u, ...patch } : u))
-      );
-    },
+    (fileId, patch) =>
+      setUploads((prev) => prev.map((u) => (u.file_id === fileId ? { ...u, ...patch } : u))),
     [setUploads]
   );
 
@@ -22,22 +19,10 @@ export default function UploadPanel({ uploads, setUploads }) {
     setBusy(true);
     try {
       const data = await uploadFile(file);
-      setUploads((prev) => [
-        {
-          file_id: data.file_id,
-          filename: file.name,
-          status: "pending",
-        },
-        ...prev,
-      ]);
+      setUploads((prev) => [{ file_id: data.file_id, filename: file.name, status: "pending" }, ...prev]);
     } catch (e) {
       setUploads((prev) => [
-        {
-          file_id: `err-${Date.now()}`,
-          filename: file.name,
-          status: "error",
-          error_message: e.message || "Upload failed",
-        },
+        { file_id: `err-${Date.now()}`, filename: file.name, status: "error", error_message: e.message || "Upload failed" },
         ...prev,
       ]);
     } finally {
@@ -47,27 +32,20 @@ export default function UploadPanel({ uploads, setUploads }) {
   };
 
   return (
-    <section className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 shadow-sm">
-      <h2 className="mb-2 text-sm font-semibold text-speech-ink">Upload audio</h2>
+    <section className="neu p-5 space-y-4">
+      <h2 className="text-sm font-bold text-neu-ink tracking-wide uppercase">Upload Audio</h2>
+
+      {/* Drop zone */}
       <div
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDrag(true);
-        }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDrag(false);
-          void handleFiles(e.dataTransfer.files);
-        }}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); void handleFiles(e.dataTransfer.files); }}
         onClick={() => inputRef.current?.click()}
-        className={`cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-speech-muted transition ${
-          drag ? "border-speech-accent bg-blue-50/50" : "hover:border-slate-300"
+        className={`neu-inset cursor-pointer px-6 py-10 text-center text-sm transition select-none ${
+          drag ? "text-neu-accent" : "text-neu-muted"
         }`}
       >
         <input
@@ -77,19 +55,22 @@ export default function UploadPanel({ uploads, setUploads }) {
           className="hidden"
           onChange={(e) => void handleFiles(e.target.files)}
         />
-        {busy ? "Uploading…" : "Drop an audio file here, or click to choose"}
+        <div className="flex flex-col items-center gap-2 pointer-events-none">
+          <span className="text-3xl">{busy ? "⏳" : drag ? "🎯" : "🎙️"}</span>
+          <span>{busy ? "Uploading…" : "Drop an audio file here, or click to choose"}</span>
+          <span className="text-xs opacity-60">MP3 · WAV · M4A · MP4 · WebM</span>
+        </div>
       </div>
+
+      {/* Upload list */}
       {uploads.length ? (
-        <ul className="mt-4 space-y-2">
+        <ul className="space-y-2">
           {uploads.map((u) =>
             typeof u.file_id === "number" ? (
               <UploadStatus key={u.file_id} item={u} onUpdate={onUpdate} />
             ) : (
-              <li
-                key={u.file_id}
-                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
-              >
-                {u.filename}: {u.error_message}
+              <li key={u.file_id} className="neu-sm px-4 py-3 text-sm text-neu-danger">
+                <span className="font-semibold">{u.filename}</span>: {u.error_message}
               </li>
             )
           )}

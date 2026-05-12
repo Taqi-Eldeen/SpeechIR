@@ -66,3 +66,4 @@ media/*
 *.sqlite3
 celerybeat-schedule
 celerybeat.pid
+/.claude

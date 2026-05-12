@@ -3,19 +3,8 @@ import { fetchFullText } from "../api/text.js";
 import { audioSrcFromPlaybackUrl } from "../lib/media.js";
 import ResultCard from "./ResultCard.jsx";
 
-export default function ResultsList({
-  results,
-  playingKey,
-  onPlay,
-  relevantSet,
-  onToggleRelevant,
-  showEvalControls,
-}) {
-  const fileIds = useMemo(() => {
-    const ids = [...new Set(results.map((r) => r.file_id))];
-    return ids;
-  }, [results]);
-
+export default function ResultsList({ results, playingKey, onPlay, relevantSet, onToggleRelevant, showEvalControls }) {
+  const fileIds = useMemo(() => [...new Set(results.map((r) => r.file_id))], [results]);
   const [fullByFile, setFullByFile] = useState(() => new Map());
 
   useEffect(() => {
@@ -31,13 +20,10 @@ export default function ResultsList({
           }
         })
       );
-      if (cancelled) return;
-      setFullByFile(new Map(entries));
+      if (!cancelled) setFullByFile(new Map(entries));
     };
     void run();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [fileIds]);
 
   const grouped = useMemo(() => {
@@ -46,11 +32,7 @@ export default function ResultsList({
       if (!map.has(r.file_id)) map.set(r.file_id, []);
       map.get(r.file_id).push(r);
     }
-    return fileIds.map((id) => ({
-      file_id: id,
-      filename: map.get(id)[0]?.filename ?? "",
-      hits: map.get(id),
-    }));
+    return fileIds.map((id) => ({ file_id: id, filename: map.get(id)[0]?.filename ?? "", hits: map.get(id) }));
   }, [results, fileIds]);
 
   if (!results.length) return null;
@@ -59,11 +41,11 @@ export default function ResultsList({
     <div className="space-y-8">
       {grouped.map((g) => (
         <section key={g.file_id}>
-          <h2 className="mb-3 text-sm font-semibold text-speech-ink">
+          <h2 className="mb-3 text-sm font-bold text-neu-ink px-1">
             {g.filename}{" "}
-            <span className="font-normal text-speech-muted">(file #{g.file_id})</span>
+            <span className="font-normal text-neu-muted">(file #{g.file_id})</span>
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {g.hits.map((r) => (
               <ResultCard
                 key={r.seg_id}
@@ -75,13 +57,18 @@ export default function ResultsList({
               />
             ))}
           </div>
-          <details className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2">
-            <summary className="cursor-pointer text-sm font-medium text-speech-ink">
-              Full transcript (entire file)
+
+          {/* Full transcript */}
+          <details className="neu mt-4 overflow-hidden">
+            <summary className="neu-btn cursor-pointer px-5 py-3 text-sm font-semibold text-neu-ink flex items-center justify-between">
+              <span>Full transcript (entire file)</span>
+              <span className="text-neu-muted">▾</span>
             </summary>
-            <pre className="mt-2 max-h-[50vh] overflow-auto whitespace-pre-wrap break-words rounded-md bg-white p-3 text-xs text-slate-800">
-              {fullByFile.get(g.file_id) ?? "Loading…"}
-            </pre>
+            <div className="neu-inset mx-4 mb-4 mt-1 px-4 py-3 rounded-[0.875rem]">
+              <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap break-words text-xs text-neu-ink leading-relaxed">
+                {fullByFile.get(g.file_id) ?? "Loading…"}
+              </pre>
+            </div>
           </details>
         </section>
       ))}

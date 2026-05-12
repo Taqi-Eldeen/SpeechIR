@@ -3,6 +3,7 @@ import pickle
 from pathlib import Path
 
 from rank_bm25 import BM25Okapi
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from api.models import get_db
 from worker.ir_processor import build_inverted_index, normalize
@@ -23,9 +24,12 @@ def bm25_path_for_file(file_id: int) -> Path:
     return data_dir() / f"bm25_{file_id}.pkl"
 
 
+def tfidf_path_for_file(file_id: int) -> Path:
+    return data_dir() / f"tfidf_{file_id}.pkl"
+
+
 def persist_ir_for_file(file_id: int) -> None:
-    """Build inverted index rows and BM25 pickle for one audio file after segments exist."""
-    ddir = data_dir()
+    """Build inverted index, BM25 pickle, and TF-IDF pickle for one audio file."""
     with get_db() as db:
         db.execute("DELETE FROM inverted_index WHERE file_id = ?", (file_id,))
         db.commit()
@@ -55,12 +59,24 @@ def persist_ir_for_file(file_id: int) -> None:
         db.commit()
 
     corpus = [normalize(s["text"]) for s in segments]
-    path = bm25_path_for_file(file_id)
+    seg_ids = [s["id"] for s in segments]
+
+    bm25_path = bm25_path_for_file(file_id)
+    tfidf_path = tfidf_path_for_file(file_id)
+
     if not corpus or not any(corpus):
-        path.unlink(missing_ok=True)
+        bm25_path.unlink(missing_ok=True)
+        tfidf_path.unlink(missing_ok=True)
         return
 
+    # BM25 — operates on stemmed token lists
     bm25 = BM25Okapi(corpus)
-    payload = {"segment_ids": [s["id"] for s in segments], "bm25": bm25}
-    with path.open("wb") as f:
-        pickle.dump(payload, f)
+    with bm25_path.open("wb") as f:
+        pickle.dump({"segment_ids": seg_ids, "bm25": bm25}, f)
+
+    # TF-IDF — operates on raw (unstemmed) segment text for cosine similarity scoring
+    raw_corpus = [s["text"] for s in segments]
+    vectorizer = TfidfVectorizer(stop_words="english", sublinear_tf=True)
+    matrix = vectorizer.fit_transform(raw_corpus)
+    with tfidf_path.open("wb") as f:
+        pickle.dump({"segment_ids": seg_ids, "vectorizer": vectorizer, "matrix": matrix}, f)
