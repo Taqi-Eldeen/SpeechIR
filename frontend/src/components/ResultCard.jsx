@@ -50,29 +50,47 @@ export default function ResultCard({ result, playing, onPlay, relevant, onToggle
         <Snippet html={result.excerpt} />
       </div>
 
-      {/* Relevance checkbox */}
+      {/* Bug fix #4: Relevance toggle — large, coloured, clearly labelled */}
       {onToggleRelevant ? (
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-neu-muted select-none">
+        <button
+          type="button"
+          onClick={() => onToggleRelevant(result.seg_id)}
+          className={`relevant-toggle w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all select-none ${
+            relevant ? "relevant-toggle--active" : ""
+          }`}
+          aria-pressed={!!relevant}
+        >
+          {/* Large checkbox box */}
           <span
-            onClick={() => onToggleRelevant(result.seg_id)}
-            className={`neu-btn flex h-5 w-5 items-center justify-center rounded text-xs font-bold transition-colors ${
-              relevant ? "text-neu-accent" : "text-transparent"
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all ${
+              relevant
+                ? "border-transparent text-white"
+                : "border-neu-muted text-transparent"
             }`}
-            style={{ boxShadow: relevant
-              ? "inset 3px 3px 6px var(--neu-dark), inset -3px -3px 6px var(--neu-light)"
-              : "4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light)"
+            style={{
+              background: relevant ? "var(--neu-accent)" : "transparent",
+              boxShadow: relevant
+                ? "0 0 0 3px rgba(78,110,242,0.25)"
+                : "inset 2px 2px 4px var(--neu-dark), inset -2px -2px 4px var(--neu-light)",
             }}
           >
-            ✓
+            <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+              <path d="M1 5l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </span>
-          <input
-            type="checkbox"
-            checked={!!relevant}
-            onChange={() => onToggleRelevant(result.seg_id)}
-            className="hidden"
-          />
-          Mark as relevant (for evaluation)
-        </label>
+          <span style={{ color: relevant ? "var(--neu-accent)" : "var(--neu-muted)" }}>
+            {relevant ? "✓ Marked as relevant" : "Mark as relevant"}
+          </span>
+          <span
+            className="ml-auto text-xs px-2 py-0.5 rounded-full"
+            style={{
+              background: relevant ? "rgba(78,110,242,0.12)" : "transparent",
+              color: relevant ? "var(--neu-accent)" : "transparent",
+            }}
+          >
+            for evaluation
+          </span>
+        </button>
       ) : null}
     </article>
   );

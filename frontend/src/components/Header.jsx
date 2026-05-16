@@ -1,7 +1,7 @@
-export default function Header({ onLogoClick }) {
+export default function Header({ onLogoClick, showUploadButton, onUploadClick }) {
   return (
     <header className="w-full" style={{ background: "var(--neu-bg)" }}>
-      <div className="mx-auto flex max-w-3xl items-center gap-4 px-5 py-5">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-5">
         <button
           type="button"
           onClick={onLogoClick}
@@ -17,6 +17,19 @@ export default function Header({ onLogoClick }) {
             <p className="text-xs text-neu-muted">Speech-based information retrieval</p>
           </div>
         </button>
+
+        {/* Quick upload button — shown when not already on home/landing */}
+        {showUploadButton ? (
+          <button
+            type="button"
+            onClick={onUploadClick}
+            className="neu-btn px-4 py-2 text-xs font-semibold text-neu-ink flex items-center gap-1.5"
+            title="Upload a new audio file"
+          >
+            <span>🎙️</span>
+            <span>Upload</span>
+          </button>
+        ) : null}
       </div>
     </header>
   );

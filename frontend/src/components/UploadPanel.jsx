@@ -2,8 +2,9 @@ import { useCallback, useRef, useState } from "react";
 import { uploadFile } from "../api/upload.js";
 import UploadStatus from "./UploadStatus.jsx";
 
-export default function UploadPanel({ uploads, setUploads }) {
-  const inputRef = useRef(null);
+export default function UploadPanel({ uploads, setUploads, uploadRef: externalRef }) {
+  const internalRef = useRef(null);
+  const inputRef = externalRef ?? internalRef;
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
 

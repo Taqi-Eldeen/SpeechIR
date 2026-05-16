@@ -1,11 +1,14 @@
-export default function SearchBar({ query, setQuery, onSearch, loading, scorer, setScorer }) {
+export default function SearchBar({ query, setQuery, onSearch, loading, scorer, setScorer, shake }) {
   const submit = (e) => {
     e.preventDefault();
     onSearch();
   };
 
   return (
-    <form onSubmit={submit} className="neu p-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <form
+      onSubmit={submit}
+      className={`neu p-4 flex flex-col gap-3 sm:flex-row sm:items-center ${shake ? "shake" : ""}`}
+    >
       <input
         type="search"
         value={query}
@@ -28,7 +31,7 @@ export default function SearchBar({ query, setQuery, onSearch, loading, scorer, 
       </select>
       <button
         type="submit"
-        disabled={loading || !query.trim()}
+        disabled={loading}
         className="neu-btn-accent px-5 py-2.5 text-sm font-semibold"
       >
         {loading ? "Searching…" : "Search"}

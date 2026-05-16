@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { searchSegments } from "./api/search.js";
 import { fetchFullText } from "./api/text.js";
 import EvalPanel from "./components/EvalPanel.jsx";
 import Header from "./components/Header.jsx";
+import LandingPage from "./components/LandingPage.jsx";
+import NoResults from "./components/NoResults.jsx";
 import ResultsList from "./components/ResultsList.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import Snippet from "./components/Snippet.jsx";
@@ -18,7 +20,8 @@ function fmtTime(s) {
 }
 
 export default function App() {
-  const [view, setView] = useState("home");
+  // "landing" | "home" | "results" | "no-results" | "player"
+  const [view, setView] = useState("landing");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,13 +30,25 @@ export default function App() {
   const [playerTranscript, setPlayerTranscript] = useState("");
   const [relevantSet, setRelevantSet] = useState(() => new Set());
   const [scorer, setScorer] = useState("bm25");
+  // shake the search bar on empty-submit attempt
+  const [shake, setShake] = useState(false);
+  const uploadRef = useRef(null);
 
   const { play, stop, playingKey } = useAudioManager();
 
+  // Bug fix #6: logo goes home but KEEPS the query so user can see what they searched
   const goHome = useCallback(() => {
     setView("home");
     stop();
     setActiveAudio(null);
+  }, [stop]);
+
+  const goLanding = useCallback(() => {
+    setView("landing");
+    stop();
+    setActiveAudio(null);
+    setResults([]);
+    setQuery("");
   }, [stop]);
 
   const goResults = useCallback(() => {
@@ -43,7 +58,12 @@ export default function App() {
 
   const runSearch = useCallback(async () => {
     const q = query.trim();
-    if (!q) return;
+    // Bug fix #3: shake + stay put on empty query
+    if (!q) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
     setLoading(true);
     setRelevantSet(new Set());
     try {
@@ -51,10 +71,12 @@ export default function App() {
       const list = Array.isArray(data) ? data : [];
       list.sort((a, b) => Number(b.score) - Number(a.score));
       setResults(list);
-      setView(list.length ? "results" : "home");
+      // Bug fix #1 & #5: show no-results view instead of silent home fallback
+      // Also transitions away from landing when user searches
+      setView(list.length ? "results" : "no-results");
     } catch {
       setResults([]);
-      setView("home");
+      setView("no-results");
     } finally {
       setLoading(false);
     }
@@ -89,14 +111,14 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ background: "var(--neu-bg)" }}>
       <Header
-        onLogoClick={() => {
-          goHome();
-          setResults([]);
-          setQuery("");
-        }}
+        onLogoClick={goLanding}
+        showUploadButton={view !== "landing" && view !== "home"}
+        onUploadClick={goHome}
       />
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-6">
+
+        {/* Search bar — always visible except in player */}
         {view !== "player" ? (
           <SearchBar
             query={query}
@@ -105,11 +127,35 @@ export default function App() {
             loading={loading}
             scorer={scorer}
             setScorer={setScorer}
+            shake={shake}
           />
         ) : null}
 
-        {view === "home" ? <UploadPanel uploads={uploads} setUploads={setUploads} /> : null}
+        {/* ── Landing (shown until first interaction) ── */}
+        {view === "landing" ? (
+          <LandingPage
+            onUpload={() => {
+              setView("home");
+              setTimeout(() => uploadRef.current?.click(), 100);
+            }}
+          />
+        ) : null}
 
+        {/* ── Home (upload panel) ── */}
+        {view === "home" ? (
+          <UploadPanel uploads={uploads} setUploads={setUploads} uploadRef={uploadRef} />
+        ) : null}
+
+        {/* ── No Results ── */}
+        {view === "no-results" ? (
+          <NoResults
+            query={query}
+            onHome={goHome}
+            onClear={() => { setQuery(""); setView("home"); }}
+          />
+        ) : null}
+
+        {/* ── Results ── */}
         {view === "results" && results.length > 0 ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
@@ -140,6 +186,7 @@ export default function App() {
           </div>
         ) : null}
 
+        {/* ── Player ── */}
         {view === "player" && activeAudio ? (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-3">
@@ -227,12 +274,6 @@ export default function App() {
           </div>
         ) : null}
 
-        {view === "home" && !loading && results.length === 0 ? (
-          <p className="text-center text-sm text-neu-muted px-4">
-            Search transcribed lectures or upload a new audio file. Results open in a dedicated
-            view; use Play to open the focused player.
-          </p>
-        ) : null}
       </main>
     </div>
   );

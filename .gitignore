@@ -67,3 +67,14 @@ media/*
 celerybeat-schedule
 celerybeat.pid
 /.claude
+create_documentation.js
+create_presentation.js
+create_proposal.js
+create_scope.js
+create_writeup.js
+SpeechIR_Documentation.docx
+SpeechIR Demo.mp4
+SpeechIR_Proposal.docx
+SpeechIR_Writeup.docx
+SpeechIR_Scope.docx
+SpeechIR_Presentation.pptx
