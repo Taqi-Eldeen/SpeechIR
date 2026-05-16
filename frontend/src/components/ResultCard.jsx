@@ -15,7 +15,6 @@ export default function ResultCard({ result, playing, onPlay, relevant, onToggle
 
   return (
     <article className="neu p-5 space-y-4">
-      {/* Top row */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
@@ -32,7 +31,6 @@ export default function ResultCard({ result, playing, onPlay, relevant, onToggle
           </p>
         </div>
 
-        {/* Play controls */}
         <div className="flex items-center gap-3 shrink-0">
           <AudioPlayer playing={playing} />
           <button
@@ -45,12 +43,10 @@ export default function ResultCard({ result, playing, onPlay, relevant, onToggle
         </div>
       </div>
 
-      {/* Snippet */}
       <div className="neu-inset px-4 py-3 rounded-[0.875rem]">
         <Snippet html={result.excerpt} />
       </div>
 
-      {/* Bug fix #4: Relevance toggle — large, coloured, clearly labelled */}
       {onToggleRelevant ? (
         <button
           type="button"
@@ -60,12 +56,9 @@ export default function ResultCard({ result, playing, onPlay, relevant, onToggle
           }`}
           aria-pressed={!!relevant}
         >
-          {/* Large checkbox box */}
           <span
             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all ${
-              relevant
-                ? "border-transparent text-white"
-                : "border-neu-muted text-transparent"
+              relevant ? "border-transparent text-white" : "border-neu-muted text-transparent"
             }`}
             style={{
               background: relevant ? "var(--neu-accent)" : "transparent",

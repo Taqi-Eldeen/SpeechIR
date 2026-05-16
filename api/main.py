@@ -1,16 +1,15 @@
-import os
 import mimetypes
+import os
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from api.models import init_db
 from api.routes.search import router as search_router
 from api.routes.upload import router as upload_router
-
 
 app = FastAPI(title="SpeechIR API")
 
@@ -29,15 +28,15 @@ app.add_middleware(
 media_dir = Path(os.getenv("MEDIA_DIR", "media"))
 media_dir.mkdir(parents=True, exist_ok=True)
 
+CHUNK_SIZE = 1024 * 256
+
 
 @app.get("/media/{filename:path}")
 async def serve_media(filename: str, range: Optional[str] = Header(None)):
-    """Stream audio files with proper byte-range support for HTML5 players."""
     file_path = media_dir / filename
-    # Guard against path traversal
+
     try:
         file_path = file_path.resolve()
-        media_dir.resolve()
         file_path.relative_to(media_dir.resolve())
     except (ValueError, RuntimeError):
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -49,9 +48,6 @@ async def serve_media(filename: str, range: Optional[str] = Header(None)):
     mime_type, _ = mimetypes.guess_type(str(file_path))
     mime_type = mime_type or "application/octet-stream"
 
-    CHUNK = 1024 * 256  # 256 KB chunks
-
-    # --- Range request ---
     if range and range.startswith("bytes="):
         try:
             raw = range[6:]
@@ -75,7 +71,7 @@ async def serve_media(filename: str, range: Optional[str] = Header(None)):
                 f.seek(start)
                 remaining = length
                 while remaining > 0:
-                    chunk = f.read(min(CHUNK, remaining))
+                    chunk = f.read(min(CHUNK_SIZE, remaining))
                     if not chunk:
                         break
                     remaining -= len(chunk)
@@ -93,10 +89,9 @@ async def serve_media(filename: str, range: Optional[str] = Header(None)):
             },
         )
 
-    # --- Full file ---
     def full_iter():
         with open(file_path, "rb") as f:
-            while chunk := f.read(CHUNK):
+            while chunk := f.read(CHUNK_SIZE):
                 yield chunk
 
     return StreamingResponse(

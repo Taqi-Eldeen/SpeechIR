@@ -20,7 +20,6 @@ function fmtTime(s) {
 }
 
 export default function App() {
-  // "landing" | "home" | "results" | "no-results" | "player"
   const [view, setView] = useState("landing");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -30,13 +29,11 @@ export default function App() {
   const [playerTranscript, setPlayerTranscript] = useState("");
   const [relevantSet, setRelevantSet] = useState(() => new Set());
   const [scorer, setScorer] = useState("bm25");
-  // shake the search bar on empty-submit attempt
   const [shake, setShake] = useState(false);
   const uploadRef = useRef(null);
 
   const { play, stop, playingKey } = useAudioManager();
 
-  // Bug fix #6: logo goes home but KEEPS the query so user can see what they searched
   const goHome = useCallback(() => {
     setView("home");
     stop();
@@ -58,7 +55,6 @@ export default function App() {
 
   const runSearch = useCallback(async () => {
     const q = query.trim();
-    // Bug fix #3: shake + stay put on empty query
     if (!q) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
@@ -71,8 +67,6 @@ export default function App() {
       const list = Array.isArray(data) ? data : [];
       list.sort((a, b) => Number(b.score) - Number(a.score));
       setResults(list);
-      // Bug fix #1 & #5: show no-results view instead of silent home fallback
-      // Also transitions away from landing when user searches
       setView(list.length ? "results" : "no-results");
     } catch {
       setResults([]);
@@ -118,7 +112,6 @@ export default function App() {
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-6">
 
-        {/* Search bar — always visible except in player */}
         {view !== "player" ? (
           <SearchBar
             query={query}
@@ -131,7 +124,6 @@ export default function App() {
           />
         ) : null}
 
-        {/* ── Landing (shown until first interaction) ── */}
         {view === "landing" ? (
           <LandingPage
             onUpload={() => {
@@ -141,12 +133,10 @@ export default function App() {
           />
         ) : null}
 
-        {/* ── Home (upload panel) ── */}
         {view === "home" ? (
           <UploadPanel uploads={uploads} setUploads={setUploads} uploadRef={uploadRef} />
         ) : null}
 
-        {/* ── No Results ── */}
         {view === "no-results" ? (
           <NoResults
             query={query}
@@ -155,7 +145,6 @@ export default function App() {
           />
         ) : null}
 
-        {/* ── Results ── */}
         {view === "results" && results.length > 0 ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
@@ -186,7 +175,6 @@ export default function App() {
           </div>
         ) : null}
 
-        {/* ── Player ── */}
         {view === "player" && activeAudio ? (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-3">
@@ -207,7 +195,6 @@ export default function App() {
             </div>
 
             <div className="neu p-6 space-y-5">
-              {/* Now playing header */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-neu-muted">Now Playing</p>
                 <h2 className="mt-1 text-lg font-bold text-neu-ink">{activeAudio.filename}</h2>
@@ -217,7 +204,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Waveform + controls */}
               <div className="flex items-center gap-4">
                 <div className="neu-inset flex h-12 items-end gap-0.5 px-4 py-2 rounded-[0.875rem]" aria-hidden>
                   {playingKey ? (
@@ -250,7 +236,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Snippet */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-neu-muted mb-2">Match snippet</p>
                 <div className="neu-inset px-4 py-3 rounded-[0.875rem]">
@@ -258,7 +243,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Full transcript */}
               <details className="neu overflow-hidden">
                 <summary className="neu-btn cursor-pointer px-5 py-3 text-sm font-semibold text-neu-ink flex items-center justify-between">
                   <span>Full transcript</span>

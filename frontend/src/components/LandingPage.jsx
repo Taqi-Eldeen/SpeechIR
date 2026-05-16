@@ -1,10 +1,7 @@
 export default function LandingPage({ onUpload }) {
   return (
     <div className="space-y-8 py-2">
-
-      {/* ── Hero ── */}
       <div className="neu p-8 text-center space-y-4">
-        {/* Arrow pointing up at the search bar */}
         <p className="text-xs text-neu-muted flex items-center justify-center gap-1.5">
           <span className="text-base">↑</span>
           Type a query above to search existing transcripts
@@ -32,7 +29,6 @@ export default function LandingPage({ onUpload }) {
         </div>
       </div>
 
-      {/* ── How it works ── */}
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-neu-muted text-center mb-4">
           How It Works
@@ -69,13 +65,12 @@ export default function LandingPage({ onUpload }) {
         </div>
       </div>
 
-      {/* ── Feature grid ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { icon: "⚡", label: "BM25 Ranking",    sub: "Best-match retrieval" },
-          { icon: "📐", label: "TF-IDF",           sub: "Cosine similarity" },
-          { icon: "🎯", label: "Timestamps",       sub: "Jump to any moment" },
-          { icon: "📊", label: "Precision / F1",   sub: "Built-in evaluation" },
+          { icon: "⚡", label: "BM25 Ranking",  sub: "Best-match retrieval" },
+          { icon: "📐", label: "TF-IDF",         sub: "Cosine similarity" },
+          { icon: "🎯", label: "Timestamps",     sub: "Jump to any moment" },
+          { icon: "📊", label: "Precision / F1", sub: "Built-in evaluation" },
         ].map(({ icon, label, sub }) => (
           <div key={label} className="neu-sm p-4 text-center space-y-1">
             <div className="text-2xl">{icon}</div>
@@ -85,13 +80,12 @@ export default function LandingPage({ onUpload }) {
         ))}
       </div>
 
-      {/* ── Stats strip ── */}
       <div className="neu p-5">
         <div className="grid grid-cols-3">
           {[
-            { val: "Whisper",      sub: "OpenAI ASR engine" },
+            { val: "Whisper",       sub: "OpenAI ASR engine" },
             { val: "BM25 + TF-IDF", sub: "Dual ranking modes" },
-            { val: "< 200 ms",    sub: "Typical search latency" },
+            { val: "< 200 ms",     sub: "Typical search latency" },
           ].map(({ val, sub }, i) => (
             <div
               key={i}
@@ -104,7 +98,6 @@ export default function LandingPage({ onUpload }) {
           ))}
         </div>
       </div>
-
     </div>
   );
 }
